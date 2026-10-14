@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Exam Portal Demo</title>
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, Helvetica, sans-serif;
+}
+body {
+    background: #ffffff;
+    color: #111111;
+    min-height: 100vh;
+}
+.header {
+    height: 110px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+}
+.brand {
+    font-size: 23px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+}
+.icons {
+    display: flex;
+    align-items: center;
+    gap: 27px;
+}
+.icon-button {
+    width: 28px;
+    height: 34px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: transparent;
+    border: none;
+    color: #111;
+    cursor: pointer;
+}
+.icon-button svg {
+    width: 23px;
+    height: 23px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+}
+.content {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: calc(100% - 72px);
+    max-width: 620px;
+    transform: translate(-50%, -50%);
+}
+.url-input {
+    display: block;
+    width: 100%;
+    height: 66px;
+    padding: 0 18px;
+    border: 2px solid #b9b9bd;
+    border-radius: 5px;
+    outline: none;
+    background: white;
+    color: #222;
+    font-size: 16px;
+    font-weight: 600;
+}
+.url-input::placeholder {
+    color: #55565c;
+    opacity: 1;
+}
+.url-input:focus {
+    border-color: #2479d0;
+}
+.action-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    height: 60px;
+    margin-top: 23px;
+    border: none;
+    border-radius: 40px;
+    background: #2379d0;
+    color: white;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 2px 3px #0003;
+}
+.action-button:active {
+    background: #1968b9;
+}
+.action-button svg {
+    width: 19px;
+    height: 19px;
+    stroke: white;
+    fill: none;
+    stroke-width: 2;
+}
+.message {
+    margin-top: 18px;
+    font-size: 13px;
+    text-align: center;
+    line-height: 1.5;
+    color: #555;
+    overflow-wrap: anywhere;
+}
+.demo-label {
+    position: fixed;
+    bottom: 12px;
+    left: 0;
+    width: 100%;
+    text-align: center;
+    font-size: 10px;
+    color: #999;
+    letter-spacing: 1px;
+}
+/* Pop‑up Info */
+#overlayInfo {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.3);
+    justify-content: center;
+    align-items: center;
+    z-index: 999;
+}
+#popup-info {
+    width: 380px;
+    background-color: #eeeeee;
+    border-radius: 20px;
+    padding: 26px 22px;
+}
+.judul-info {
+    font-size: 22px;
+    font-weight: bold;
+    margin-bottom: 18px;
+}
+.isi-info {
+    font-size: 15px;
+    margin-bottom: 28px;
+}
+.tombol-tutup {
+    text-align: right;
+}
+.tombol-tutup button {
+    background: none;
+    border: none;
+    color: #2563aa;
+    font-size: 13px;
+    cursor: pointer;
+}
+/* Pop‑up Kamera QR */
+#overlayScan {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.4);
+    justify-content: center;
+    align-items: center;
+    z-index: 999;
+}
+#popupScan {
+    width: 90%;
+    max-width: 360px;
+    background: #fff;
+    border-radius: 16px;
+    padding: 20px;
+    text-align: center;
+}
+#videoKamera {
+    width: 100%;
+    border-radius: 10px;
+    background: #222;
+}
+@media (max-width: 480px) {
+    .header {
+        height: 100px;
+        padding: 0 20px;
+    }
+    .brand {
+        font-size: 21px;
+    }
+    .icons {
+        gap: 27px;
+    }
+    .content {
+        width: calc(100% - 72px);
+    }
+    .url-input {
+        height: 66px;
+    }
+    .action-button {
+        height: 60px;
+        margin-top: 23px;
+    }
+}
+</style>
+</head>
+<body>
+<header class="header">
+    <div class="brand">Riyu Exambro</div>
+    <div class="icons">
+        <button class="icon-button" aria-label="QR Code" onclick="bukaPemindai()">
+            <svg viewBox="0 0 24 24">
+                <rect x="3" y="3" width="6" height="6"/>
+                <rect x="15" y="3" width="6" height="6"/>
+                <rect x="3" y="15" width="6" height="6"/>
+                <path d="M15 15h3v3h-3z M20 15v2 M15 20h2 M20 19v2"/>
+            </svg>
+        </button>
+        <button class="icon-button" aria-label="Riwayat" onclick="showInfo('Daftar riwayat akses URL Anda')">
+            <svg viewBox="0 0 24 24">
+                <path d="M3 12a9 9 0 1 0 2.6-6.4"/>
+                <path d="M3 4v5h5"/>
+                <path d="M12 7v5l3 2"/>
+            </svg>
+        </button>
+        <button class="icon-button" aria-label="Informasi" onclick="showInfo('Hi, terima kasih sudah menggunakan aplikasi ini.')">
+            <svg viewBox="0 0 24 24" style="fill:#111;stroke:none">
+                <circle cx="12" cy="12" r="11"/>
+                <path d="M12 10v7" stroke="white" stroke-width="2"/>
+                <circle cx="12" cy="7" r="1" fill="white"/>
+            </svg>
+        </button>
+    </div>
+</header>
+
+<!-- Jendela Info -->
+<div id="overlayInfo">
+  <div id="popup-info">
+    <div class="judul-info">Info</div>
+    <div class="isi-info" id="teks-info"></div>
+    <div class="tombol-tutup">
+      <button onclick="tutupInfo()">Tutup</button>
+    </div>
+  </div>
+</div>
+
+<!-- Jendela Pindai Kamera -->
+<div id="overlayScan">
+  <div id="popupScan">
+    <div class="judul-info">Pindai QR‑Code</div>
+    <video id="videoKamera" autoplay playsinline></video>
+    <div class="tombol-tutup" style="margin‑top:15px">
+      <button onclick="tutupPemindai()">Tutup</button>
+    </div>
+  </div>
+</div>
+
+<main class="content">
+    <form id="urlForm">
+        <input class="url-input" id="urlInput" type="url" placeholder="Masukkan URL" required>
+        <button class="action-button" type="submit">AKSES URL</button>
+    </form>
+    <button class="action-button" type="button" onclick="bukaPemindai()">
+        <svg viewBox="0 0 24 24">
+            <rect x="3" y="3" width="7" height="7"/>
+            <rect x="14" y="3" width="7" height="7"/>
+            <rect x="3" y="14" width="7" height="7"/>
+            <path d="M14 14h3v3h‑3z M19 14v2 M14 19h2 M19 19v2"/>
+        </svg>
+        SCAN QR‑CODE
+    </button>
+    <div class="message" id="message"></div>
+</main>
+<div class="demo-label"></div>
+
+<script>
+const form = document.getElementById("urlForm");
+const input = document.getElementById("urlInput");
+const message = document.getElementById("message");
+let streamKamera = null;
+let video = null;
+
+// Fungsi jendela info
+function showInfo(teks) {
+  document.getElementById("teks-info").textContent = teks;
+  document.getElementById("overlayInfo").style.display = "flex";
+}
+function tutupInfo() {
+  document.getElementById("overlayInfo").style.display = "none";
+}
+
+// Fungsi buka kamera & pindai QR
+async function bukaPemindai() {
+  try {
+    streamKamera = await navigator.mediaDevices.getUserMedia({ video: { facingMode:"environment" } });
+    video = document.getElementById("videoKamera");
+    video.srcObject = streamKamera;
+    document.getElementById("overlayScan").style.display = "flex";
+    mulaiBacaQR();
+  } catch(err) {
+    showInfo("Tidak bisa buka kamera. Pastikan izin kamera sudah diizinkan.");
+  }
+}
+function tutupPemindai() {
+  if(streamKamera) streamKamera.getTracks().forEach(track=>track.stop());
+  document.getElementById("overlayScan").style.display = "none";
+}
+function mulaiBacaQR() {
+  const canvas = document.createElement("canvas");
+  const ctx = canvas.getContext("2d");
+  function bacaUlang() {
+    if(!video || !streamKamera) return;
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    ctx.drawImage(video,0,0);
+    const dataGambar = ctx.getImageData(0,0,canvas.width,canvas.height);
+    const hasil = jsQR(dataGambar.data, canvas.width, canvas.height);
+    if(hasil) {
+      input.value = hasil.data;
+      tutupPemindai();
+      showInfo("Berhasil dipindai! URL sudah dimasukkan.");
+      return;
+    }
+    requestAnimationFrame(bacaUlang);
+  }
+  bacaUlang();
+}
+
+// Cek URL saat dikirim
+form.addEventListener("submit", function(e) {
+    e.preventDefault();
+    try {
+        const urlBaru = new URL(input.value.trim());
+        if (!["https:", "http:"].includes(urlBaru.protocol) || !urlBaru.hostname.includes(".")) {
+            throw new Error("URL tidak valid");
+        }
+        message.textContent = "URL diterima!";
+        message.style.color = "#2479d0";
+    } catch (err) {
+        message.textContent = "Masukkan URL yang valid, contoh: https://contoh.com";
+        message.style.color = "#d93025";
+    }
+});
+</script>
+</body>
+</html>
